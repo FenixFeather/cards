@@ -1,15 +1,17 @@
 #!/usr/bin/env python
 
+#An outline of an engine for concept-to-description/category matching card game.
+
 import random
 
 class player():
     def __init__(self, number):
-        self.hand = []
+        self.hand = []  #Hand will hold card objects.
         self.score = 0
-        self.pool = []
+        self.pool = []  #When the player is the judge, other players submit to the player's pool
         self.number = number
-        self.dCard = None
-        self.name = ""
+        self.dCard = None  #When the player is judge, the player will have the descriptor card for the round
+        self.name = ""  #Player's name is obtained thru game.getNames()
         
     def __repr__(self):
         return "player({0})".format(self.number)
@@ -20,12 +22,12 @@ class player():
     def __hash__(self):  #identity of player is determined by number, not name
         return self.number
         
-    def __eq__(self,other):
+    def __eq__(self,other):  #equality of two players is determined by comparing their hashes
         return (hash(self) == hash(other))
         
-    def submit(self,targetPlayer):
+    def submit(self,targetPlayer): #The submit method will eventually take input from other devices. The console is the placeholder for now.
         print("{0}'s turn to submit.".format(str(self)))
-        self.displayCards(self.hand)
+        self.displayCards(self.hand)  #Player will want to look at their hand to decide. The GUI will display this in the future.
         choice = self.chooseCard(self.hand)  #pick a card from your hand
         targetPlayer.pool.append(self.hand.pop(choice))  #take it away and give it to the target player
         
@@ -40,32 +42,32 @@ class player():
         choice = self.chooseCard(self.pool)
         return self.pool[choice].owner
         
-    def chooseCard(self,cards):
+    def chooseCard(self,cards):  #Once again, this method is a placeholder. Future versions will involve picking thru a GUI.
         while True:
             try:
                 choice = int(raw_input("Enter card number: ")) - 1
-                cards[choice]
+                cards[choice]  #Test to see they've entered a number in range
                 return choice
-            except (ValueError,IndexError):
+            except (ValueError,IndexError):  #If what they've entered is in any way invalid, continue
                 print("Invalid entry.")
                 continue
         
 class deck():
     def __init__(self):
-        self.descriptorCards = self.parseCards("test-adjs.txt","descriptor")
+        self.descriptorCards = self.parseCards("test-adjs.txt","descriptor")  #The two decks of cards are parsed from text files
         self.entityCards = self.parseCards("test-nouns.txt","entity")
         
-    def parseCards(self, path, cardType):
+    def parseCards(self, path, cardType): #Parser assumes each line is its own card and returns a list of card objects
         f = open(path)
-        cards = [card(cardType,word) for word in f.readlines()]
+        cards = [card(cardType,word) for word in f.readlines()] 
         f.close()               
         return cards
         
-    def deal(self, targetPlayer):
+    def deal(self, targetPlayer): #Pops a single card off the entity cards pile and gives it to the target player
         targetPlayer.hand.append(self.entityCards.pop())
         targetPlayer.hand[-1].setOwner(targetPlayer)
         
-    def dealDCard(self, targetPlayer):
+    def dealDCard(self, targetPlayer):  #Pops a single card off the descriptor cards pile and gives it to the target player
         targetPlayer.dCard = self.descriptorCards.pop()
         
     def shuffleCards(self):
@@ -74,9 +76,9 @@ class deck():
         
 class card():
     def __init__(self,cardType,text):
-        self.cardType = cardType
-        self.text = text
-        self.owner = ""
+        self.cardType = cardType  #Whether the card is an entity or descriptor. At the moment this isn't really used.
+        self.text = text  #The text of the card
+        self.owner = ""  #The owner of the card. Used to identify whose card the judge picked.
         
     def __repr__(self):
         return repr(self.text)
@@ -90,7 +92,7 @@ class card():
 class game():
     def __init__(self, Deck):
         numPlayers = int(raw_input("How many players?: "))
-        self.players = [player(i) for i in range(numPlayers)]
+        self.players = [player(i) for i in range(numPlayers)]  #Creates a list of numPlayers player objects, each initialized to a unique id
         self.judge = random.choice(self.players)
         self.deck = Deck
         
@@ -115,7 +117,7 @@ class game():
                 player.submit(self.judge) #player submits a card
                 self.deck.deal(player) #player draws a card after submission
                 print("---")
-        winnerName = self.judge.judge()  #judge judges
+        winnerName = self.judge.judge()  #call the judge method. This returns the name of the winning player.
         for player in self.players:
             if winnerName == str(player):
                 player.score += 1
@@ -128,11 +130,11 @@ class game():
             print("{0}: {1}".format(str(player), player.score))
         
 if __name__ == "__main__":
-    Deck = deck()
-    Deck.shuffleCards()
-    Game = game(Deck)
-    Game.getNames()
-    Game.drawCards()
+    Deck = deck()   #Begin by initializing a deck
+    Deck.shuffleCards()  
+    Game = game(Deck)   #Initialize the game with the current deck
+    Game.getNames()   #Get player names
+    Game.drawCards()  #Have players draw all the cards
     print("Welcome to cards!\n")
     try:
         while True:

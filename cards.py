@@ -78,7 +78,7 @@ class card():
     def __init__(self,cardType,text):
         self.cardType = cardType  #Whether the card is an entity or descriptor. At the moment this isn't really used.
         self.text = text  #The text of the card
-        self.owner = ""  #The owner of the card. Used to identify whose card the judge picked.
+        self.owner = None  #The hash of the owner of the card. Used to identify whose card the judge picked.
         
     def __repr__(self):
         return repr(self.text)
@@ -87,7 +87,7 @@ class card():
         return self.text
         
     def setOwner(self, player):
-        self.owner = str(player)
+        self.owner = hash(player)
         
 class game():
     def __init__(self, Deck):
@@ -117,9 +117,9 @@ class game():
                 player.submit(self.judge) #player submits a card
                 self.deck.deal(player) #player draws a card after submission
                 print("---")
-        winnerName = self.judge.judge()  #call the judge method. This returns the name of the winning player.
+        winnerHash = self.judge.judge()  #call the judge method. This returns the name of the winning player.
         for player in self.players:
-            if winnerName == str(player):
+            if winnerHash == hash(player):
                 player.score += 1
                 print("{0} won this round!".format(str(player)))
                 break

@@ -19,13 +19,13 @@ class player():
     def __str__(self):
         return self.name
         
-    def __hash__(self):  #identity of player is determined by number, not name
+    def __hash__(self):  #Currently the hash is just their player number, but will change in the future.
         return self.number
         
     def __eq__(self,other):  #equality of two players is determined by comparing their hashes
         return (hash(self) == hash(other))
         
-    def submit(self,targetPlayer): #The submit method will eventually take input from other devices. The console is the placeholder for now.
+    def submit(self,targetPlayer): #The submit method will eventually take input from other devices. The console is the placeholder input for now.
         print("{0}'s turn to submit.".format(str(self)))
         self.displayCards(self.hand)  #Player will want to look at their hand to decide. The GUI will display this in the future.
         choice = self.chooseCard(self.hand)  #pick a card from your hand
@@ -35,7 +35,7 @@ class player():
         for i, card in enumerate(cards):
             print("{0}. {1}".format(i+1, card))
             
-    def judge(self):        
+    def judge(self):  #placeholder method that returns the ID of the owner of the winning card
         print("{0} is now judging. Choose the card that best matches the description: {1}".format(str(self),str(self.dCard)))
         random.shuffle(self.pool)
         self.displayCards(self.pool)
@@ -92,8 +92,8 @@ class card():
 class game():
     def __init__(self, Deck):
         numPlayers = int(raw_input("How many players?: "))
-        self.players = [player(i) for i in range(numPlayers)]  #Creates a list of numPlayers player objects, each initialized to a unique id
-        self.judge = random.choice(self.players)
+        self.players = [player(i) for i in range(numPlayers)] #Creates a list of numPlayers player objects, each initialized to a unique id
+        self.judge = random.choice(self.players)              
         self.deck = Deck
         
     def getNames(self):
@@ -117,7 +117,7 @@ class game():
                 player.submit(self.judge) #player submits a card
                 self.deck.deal(player) #player draws a card after submission
                 print("---")
-        winnerHash = self.judge.judge()  #call the judge method. This returns the name of the winning player.
+        winnerHash = self.judge.judge()  #call the judge method. This returns the hash of the winning player.
         for player in self.players:
             if winnerHash == hash(player):
                 player.score += 1

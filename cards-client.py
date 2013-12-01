@@ -65,8 +65,6 @@ class ClientPlayer():
             print("{0}. {1}".format(i+1, card))
             
     def judge(self):  #placeholder method that returns the ID of the owner of the winning card
-        print("{0} is now judging. Choose the card that best matches the description: {1}".format(str(self),str(self.dCard)))
-        random.shuffle(self.pool)
         self.displayCards(self.pool)
         choice = self.chooseCard(self.pool)
         self.server.send_info((self.number,'winner',choice))
@@ -144,6 +142,9 @@ class Game():
     def scores(self):
         return self.server.request_info((me.number,'scores'))
         
+def update(s):
+    sys.stdout.write("\r" + (s))
+    sys.stdout.flush()        
         
 if __name__ == "__main__":
     me = ClientPlayer()
@@ -151,17 +152,18 @@ if __name__ == "__main__":
 #    time.sleep(30)
     while True:
         try:
+            update("Waiting for others...")
             if me.myTurn():
                 print("Your turn!")            
                 me.updateTurnInfo()
                 if me.isJudge:
                     print("You are judging.")
-                    print("The description for this round is {0}".format(game.description))
+                    print("The description for this round is {0}.".format(game.description))
                     me.updatePool()
                     me.judge()
                 else:
                     print("Submit a card.")
-                    print("The description for this round is {0}".format(game.description))
+                    print("The description for this round is {0}.".format(game.description))
                     me.updateHand()
                     me.submit()
                     
@@ -172,9 +174,13 @@ if __name__ == "__main__":
                         print("==Scores==")
                         for key in scores.keys():
                             print("{0}: {1}".format(key,scores[key]))
+                        print("\n----------------\n----------------\n")
                         break
+                        
                     time.sleep(1)
-            time.sleep(1)
+            time.sleep(0.5)
+            update("Waiting for others.. ")
+            time.sleep(0.5)
         except KeyboardInterrupt:
             sys.exit(0)
         except socket.error:

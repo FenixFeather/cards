@@ -9,14 +9,14 @@ import socket
 import sys
 
 class ClientPlayer():
-    def __init__(self):
+    def __init__(self,ip):
         self.hand = []  #Hand will hold card objects.
         self.score = 0
         self.pool = []  #When the player is the judge, other players submit to the player's pool
         self.number = int(time.time()*1000)
         self.dCard = None  #When the player is judge, the player will have the descriptor card for the round
         self.name = raw_input("Enter name: ")
-        self.server = Requester()
+        self.server = Requester(ip)
         self.otherPlayers = 0
         self.isJudge = False
         self.register()
@@ -96,8 +96,8 @@ class card():
         self.owner = hash(player)
 
 class Requester():
-    def __init__(self):
-        self.HOST = 'localhost'
+    def __init__(self,ip):
+        self.HOST = ip
         self.PORT = 12345    #our port from before
         self.ADDR = (self.HOST,self.PORT)
         self.BUFSIZE = 4096
@@ -119,10 +119,10 @@ class Requester():
         data = cli.recv(self.BUFSIZE)
         
 class Game():
-    def __init__(self):
+    def __init__(self, ip):
 #        self.description = ""
 #        self.roundEnd = False
-        self.server = Requester()
+        self.server = Requester(ip)
         
     @property
     def description(self):
@@ -130,10 +130,10 @@ class Game():
         
     @property
     def roundEnd(self):
-        print("Checking for round end")
+#        print("Checking for round end")
         try:
             result = self.server.request_info((me.number,'roundEnd'))
-            print(result)
+#            print(result)
             return result
         except socket.error:
             return False
@@ -147,8 +147,9 @@ def update(s):
     sys.stdout.flush()        
         
 if __name__ == "__main__":
-    me = ClientPlayer()
-    game = Game()
+    serverIp = raw_input("Enter server IP address: ")
+    me = ClientPlayer(serverIp)
+    game = Game(serverIp)
 #    time.sleep(30)
     while True:
         try:

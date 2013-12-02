@@ -68,6 +68,7 @@ class ClientPlayer():
         self.displayCards(self.pool)
         choice = self.chooseCard(self.pool)
         self.server.send_info((self.number,'winner',choice))
+        print("Submitted")
         
     def chooseCard(self,cards):  #Once again, this method is a placeholder. Future versions will involve picking thru a GUI.
         while True:
@@ -159,16 +160,17 @@ if __name__ == "__main__":
                 me.updateTurnInfo()
                 if me.isJudge:
                     print("You are judging.")
-                    print("The description for this round is {0}.".format(game.description))
+                    print("The description for this round is {0}.".format(game.description.strip('\n')))
                     me.updatePool()
                     me.judge()
                 else:
                     print("Submit a card.")
-                    print("The description for this round is {0}.".format(game.description))
+                    print("The description for this round is {0}.".format(game.description.strip('\n')))
                     me.updateHand()
                     me.submit()
                     
                 while True:
+                    update("Waiting for judgement...")
                     if game.roundEnd:
                         winner, scores = game.scores
                         print("{0} won this round!".format(winner))
@@ -177,8 +179,9 @@ if __name__ == "__main__":
                             print("{0}: {1}".format(key,scores[key]))
                         print("\n----------------\n----------------\n")
                         break
-                        
-                    time.sleep(1)
+                    time.sleep(0.5)
+                    update("Waiting for judgement.. ")    
+                    time.sleep(0.5)
             time.sleep(0.5)
             update("Waiting for others.. ")
             time.sleep(0.5)

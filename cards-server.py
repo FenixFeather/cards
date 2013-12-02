@@ -116,7 +116,7 @@ class game():
         self.players = []
         self.deck = Deck
         HOST = ''    #we are the host
-        PORT = 12345    #arbitrary port not currently in use
+        PORT = int(raw_input("Port: "))    #arbitrary port not currently in use
         ADDR = (HOST,PORT)    #we need a tuple for the address
         self.BUFSIZE = 4096    #reasonably sized buffer for data
 

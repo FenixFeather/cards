@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+#TODO:Send cards to people, who are we waiting for?
 #An outline of an engine for concept-to-description/category matching card game.
 
 import random
@@ -223,13 +223,21 @@ class game():
                 conn.send(pickle.dumps(True))
                 conn.close()
             elif data[1] == 'scores':
-                conn.send(pickle.dumps((winnerName,self.constructScoresDict())))
+                conn.send(pickle.dumps((winnerName,self.constructScoresDict(),self.constructPoolDict())))
                 conn.close()
                 
     def constructScoresDict(self):
         result = {}
         for player in self.players:
             result[player.name] = player.score
+        return result
+        
+    def constructPoolDict(self):
+        result = {}
+        playerIdDict = {player.number:player.name for player in self.players}
+        for card in self.judge.pool:
+            result[card.text] = playerIdDict[card.owner]
+#        print(result)
         return result
             
     def endGame(self):

@@ -173,8 +173,10 @@ if __name__ == "__main__":
                 while True:
                     update("Waiting for judgement...")
                     if game.roundEnd:
-                        winner, scores = game.scores
+                        winner, scores, pool = game.scores
                         print("{0} won this round!".format(winner))
+                        for key in pool.keys():
+                            print("{0} submitted '{1}'".format(pool[key],key))
                         print("==Scores==")
                         for key in scores.keys():
                             print("{0}: {1}".format(key,scores[key]))

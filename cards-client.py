@@ -155,8 +155,9 @@ if __name__ == "__main__":
 #    time.sleep(30)
     while True:
         try:
-            update("Waiting for others...")
-            if me.myTurn():
+            myTurn, slowPlayer = me.myTurn()
+            update("Waiting for {0}...".format(slowPlayer))            
+            if myTurn:
                 print("Your turn!")            
                 me.updateTurnInfo()
                 if me.isJudge:
@@ -186,7 +187,7 @@ if __name__ == "__main__":
                     update("Waiting for judgement.. ")    
                     time.sleep(0.5)
             time.sleep(0.5)
-            update("Waiting for others.. ")
+            update("Waiting for {0}.. ".format(slowPlayer))
             time.sleep(0.5)
         except KeyboardInterrupt:
             sys.exit(0)

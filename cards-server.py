@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#TODO:Send cards to people, who are we waiting for?
+#TODO:who are we waiting for?
 #An outline of an engine for concept-to-description/category matching card game.
 
 import random
@@ -162,7 +162,7 @@ class game():
                     conn,addr = self.serv.accept()
                     data = pickle.loads(conn.recv(self.BUFSIZE))
                     if str(data[1]) == 'myturn':
-                        conn.send(pickle.dumps(hash(player) == data[0]))
+                        conn.send(pickle.dumps((hash(player) == data[0],player.name)))
                         conn.close()
                     elif str(data[1]) == 'roundEnd':
                         conn.send(pickle.dumps(False))
@@ -190,7 +190,7 @@ class game():
             conn,addr = self.serv.accept()
             data = pickle.loads(conn.recv(self.BUFSIZE))
             if str(data[1]) == 'myturn':
-                conn.send(pickle.dumps(hash(self.judge) == data[0]))
+                conn.send(pickle.dumps((hash(player) == data[0],player.name)))
                 conn.close()
             elif str(data[1]) == 'roundEnd':
                 conn.send(pickle.dumps(False))

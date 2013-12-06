@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-#An outline of an engine for concept-to-description/category matching card game.
-
 import random
 import time
 import pickle
@@ -27,11 +25,15 @@ class ClientPlayer():
     def myTurn(self):
         try:
             answer = self.server.request_info((self.number,'myturn'))
+#            print(answer)
             return answer
         except socket.error:
-            return False
-        except EOFError:
-            return False
+            print("socket error")
+            return (False, None)
+        except EOFError as e:
+#            print("EOFError")
+#            print(e.args)
+            return (False, None)
     
     def __str__(self):
         return self.name
@@ -156,7 +158,7 @@ if __name__ == "__main__":
     while True:
         try:
             myTurn, slowPlayer = me.myTurn()
-            update("Waiting for {0}...".format(slowPlayer))            
+            update("Waiting for {0}...".format(slowPlayer if slowPlayer else "others"))            
             if myTurn:
                 print("Your turn!")            
                 me.updateTurnInfo()
@@ -177,17 +179,17 @@ if __name__ == "__main__":
                         winner, scores, pool = game.scores
                         print("{0} won this round!".format(winner))
                         for key in pool.keys():
-                            print("{0} submitted '{1}'".format(pool[key],key))
+                            print("{0} submitted '{1}'".format(pool[key],key.strip('\n')))
                         print("==Scores==")
                         for key in scores.keys():
                             print("{0}: {1}".format(key,scores[key]))
                         print("\n----------------\n----------------\n")
                         break
                     time.sleep(0.5)
-                    update("Waiting for judgement.. ")    
+                    update("Waiting for judgement.. ")
                     time.sleep(0.5)
             time.sleep(0.5)
-            update("Waiting for {0}.. ".format(slowPlayer))
+            update("Waiting for {0}.. ".format(slowPlayer if slowPlayer else "others"))
             time.sleep(0.5)
         except KeyboardInterrupt:
             sys.exit(0)

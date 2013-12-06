@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 #TODO:who are we waiting for?
-#An outline of an engine for concept-to-description/category matching card game.
 
 import random
 import socket
@@ -125,6 +124,7 @@ class game():
         self.serv = socket.socket(socket.AF_INET,socket.SOCK_STREAM)    
 
                 ##bind our socket to the address
+        self.serv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.serv.bind((ADDR))    #the double parens are to create a tuple with one element
         self.initPlayers(self.numPlayers)
         print [player.name for player in self.players]
@@ -190,7 +190,7 @@ class game():
             conn,addr = self.serv.accept()
             data = pickle.loads(conn.recv(self.BUFSIZE))
             if str(data[1]) == 'myturn':
-                conn.send(pickle.dumps((hash(player) == data[0],player.name)))
+                conn.send(pickle.dumps((hash(self.judge) == data[0],self.judge.name)))
                 conn.close()
             elif str(data[1]) == 'roundEnd':
                 conn.send(pickle.dumps(False))

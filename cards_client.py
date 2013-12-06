@@ -119,7 +119,7 @@ class Requester():
         cli.connect((self.ADDR))
         info = pickle.dumps(request)
         cli.send(info)
-        data = cli.recv(self.BUFSIZE)
+#        data = cli.recv(self.BUFSIZE)
         
 class Game():
     def __init__(self, ip, port):

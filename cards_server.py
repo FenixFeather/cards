@@ -149,85 +149,74 @@ class game():
         for player in self.players:
             while len(player.hand) < 5:  #deal cards till player has 5 cards
                 self.deck.deal(player)
-        
-    def newRound(self):
-        self.judge.pool = []  #reset judge's pool to empty
-        self.judge.dCard = None
-        self.judge = self.players[(self.players.index(self.judge) + 1)%len(self.players)]  #rotate judge position
-        print(str(self.judge) + " is now the judge!")
-        self.deck.dealDCard(self.judge)
-        print("The description for this round is: {0}\n".format(self.judge.dCard))
-        for player in self.players:
-            if player != self.judge:
-                while True:
-                    self.serv.listen(5)    #5 is the maximum number of queued connections we'll allow
-                    print 'listening...'
-                    conn,addr = self.serv.accept()
-                    data = pickle.loads(conn.recv(self.BUFSIZE))
-                    if str(data[1]) == 'myturn':
-                        conn.send(pickle.dumps((hash(player) == data[0],player.name)))
-                        conn.close()
-                    elif str(data[1]) == 'roundEnd':
-                        conn.send(pickle.dumps(False))
-                        conn.close()
-                    elif str(data[1]) == 'turninfo':
-                        conn.send(pickle.dumps((self.numPlayers,False)))
-                        conn.close()
-                    elif data[1] == 'hand':
-                        conn.send(pickle.dumps(player.hand))
-                        conn.close()
-                    elif data[1] == 'description':
-                        conn.send(pickle.dumps(self.judge.dCard.text))
-                        conn.close()
-                    elif str(data[1]) == 'submission':
-                        player.submit(self.judge,data[2])
-                        self.deck.deal(player) #player draws a card after submission
-                        conn.close()
-                        print("---")
-                        break
-        #Judging time
-        random.shuffle(self.judge.pool)
+                
+    def handleRequests(self,player):
         while True:
             self.serv.listen(5)    #5 is the maximum number of queued connections we'll allow
             print 'listening...'
             conn,addr = self.serv.accept()
             data = pickle.loads(conn.recv(self.BUFSIZE))
+            print(data)
             if str(data[1]) == 'myturn':
-                conn.send(pickle.dumps((hash(self.judge) == data[0],self.judge.name)))
+                conn.send(pickle.dumps((hash(player) == data[0],player.name)))
                 conn.close()
             elif str(data[1]) == 'roundEnd':
-                conn.send(pickle.dumps(False))
+                conn.send(pickle.dumps(self.roundEnd))
                 conn.close()
             elif str(data[1]) == 'turninfo':
-                conn.send(pickle.dumps((self.numPlayers,True)))
+                conn.send(pickle.dumps((self.numPlayers,hash(self.judge) == data[0]))) #Sends number of other players and whether player is judge
                 conn.close()
+            elif data[1] == 'hand':
+                conn.send(pickle.dumps(player.hand))
+                conn.close()
+            elif data[1] == 'description':
+                conn.send(pickle.dumps(self.judge.dCard.text))
+                conn.close()
+            elif str(data[1]) == 'submission':
+                player.submit(self.judge,data[2])
+                self.deck.deal(player) #player draws a card after submission
+                conn.close()
+                print("---")
+                return
             elif data[1] == 'pool':
                 conn.send(pickle.dumps(self.judge.pool))
                 conn.close()
-            elif data[1] == 'description':
-                        conn.send(pickle.dumps(self.judge.dCard.text))
-                        conn.close()
+            elif data[1] == 'scores':
+                conn.send(pickle.dumps((self.winnerName,self.constructScoresDict(),self.constructPoolDict())))
+                conn.close()
+                return
             elif str(data[1]) == 'winner':
                 winnerHash = self.judge.judge(data[2])
                 conn.close()
                 for player in self.players:
                     if winnerHash == hash(player):
                         player.score += 1
-                        winnerName = player.name
+                        self.winnerName = player.name
                         print("{0} won this round!".format(str(player)))
+                return
+            if self.roundEnd:
                 break
+                   
+    def newRound(self):
+        self.judge.pool = []  #reset judge's pool to empty
+        self.judge.dCard = None
+        self.roundEnd = False
+        self.judge = self.players[(self.players.index(self.judge) + 1)%len(self.players)]  #rotate judge position
+        print(str(self.judge) + " is now the judge!")
+        self.deck.dealDCard(self.judge)
+        print("The description for this round is: {0}\n".format(self.judge.dCard))
+        for player in self.players:
+            if player != self.judge:
+                self.handleRequests(player)
+        #Judging time
+        random.shuffle(self.judge.pool)
+        self.handleRequests(self.judge)
+        
+        #Clean up the round and send everyone useful info!
         start = int(time.time())
-        while int(time.time()) - start != 5:
-            self.serv.listen(5)    #5 is the maximum number of queued connections we'll allow
-            print 'listening...'
-            conn,addr = self.serv.accept()
-            data = pickle.loads(conn.recv(self.BUFSIZE))
-            if str(data[1]) == 'roundEnd':
-                conn.send(pickle.dumps(True))
-                conn.close()
-            elif data[1] == 'scores':
-                conn.send(pickle.dumps((winnerName,self.constructScoresDict(),self.constructPoolDict())))
-                conn.close()
+        self.roundEnd = True
+        while int(time.time()) - start != 3:
+            self.handleRequests(Player(1,"stragglers"))
                 
     def constructScoresDict(self):
         result = {}

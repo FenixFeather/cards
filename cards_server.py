@@ -140,6 +140,9 @@ class game():
             newPlayer = Player(*data)
             if not any([newPlayer == player for player in self.players]):
                 self.players.append(newPlayer)
+            if str(data[1]) == 'myturn':
+                conn.send(pickle.dumps((False,None)))
+                conn.close()
         print(self.players)
     
     def drawCards(self):

@@ -50,6 +50,9 @@ class ClientPlayer():
         choice = self.chooseCard(self.hand)  #pick a card from your hand
         self.server.send_info((self.number,'submission',choice))
         
+    def directSubmit(self, choice):
+        self.server.send_info((self.number,'submission',choice))
+        
     def updateTurnInfo(self):
         self.otherPlayers, self.isJudge = self.server.request_info((self.number,'turninfo'))
         
@@ -146,6 +149,8 @@ class Game():
         return self.server.request_info((me.number,'scores'))
         
 def update(s):
+    sys.stdout.write("\r                             ")
+    sys.stdout.flush() 
     sys.stdout.write("\r" + (s))
     sys.stdout.flush()        
         
@@ -164,12 +169,12 @@ if __name__ == "__main__":
                 me.updateTurnInfo()
                 if me.isJudge:
                     print("You are judging.")
-                    print("The description for this round is {0}.".format(game.description.strip('\n')))
+                    print("The description for this round is: {0}.".format(game.description.strip('\n')))
                     me.updatePool()
                     me.judge()
                 else:
                     print("Submit a card.")
-                    print("The description for this round is {0}.".format(game.description.strip('\n')))
+                    print("The description for this round is: {0}.".format(game.description.strip('\n')))
                     me.updateHand()
                     me.submit()
                     

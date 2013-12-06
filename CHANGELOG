@@ -1,0 +1,20 @@
+Change Log
+================================
+
+Cards v1.1.1 Notes
+--------------------------------
+- Fixed crash bug
+- Ports can now be reused immediately after server shuts down.
+
+Cards v1.1.0 Notes
+--------------------------------
+- Choose your own port to host the server on!
+- More informative output to create an even better playing experience!
+- Unfortunately this one was a bad release.
+
+Cards v1.0.2 Notes
+--------------------------------
+- First official release!
+- Play with your friends in local multiplayer!
+- Exciting console based input!
+- Tons of new features, and tons of fun!

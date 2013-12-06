@@ -7,13 +7,13 @@ import socket
 import sys
 
 class ClientPlayer():
-    def __init__(self,ip,port):
+    def __init__(self,ip,port,name):
         self.hand = []  #Hand will hold card objects.
         self.score = 0
         self.pool = []  #When the player is the judge, other players submit to the player's pool
         self.number = int(time.time()*1000)
         self.dCard = None  #When the player is judge, the player will have the descriptor card for the round
-        self.name = raw_input("Enter name: ")
+        self.name = name
         self.server = Requester(ip,port)
         self.otherPlayers = 0
         self.isJudge = False
@@ -152,7 +152,7 @@ def update(s):
 if __name__ == "__main__":
     serverIp = raw_input("Enter server IP address: ")
     port = int(raw_input("Enter server port: "))
-    me = ClientPlayer(serverIp, port)
+    me = ClientPlayer(serverIp, port, raw_input("Enter name: "))
     game = Game(serverIp, port)
 #    time.sleep(30)
     while True:

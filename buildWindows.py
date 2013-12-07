@@ -29,7 +29,7 @@ def find_data_files(source,target,patterns):
     return sorted(ret.items())
 
 setup(name="Spreader",
-      version="1.4.0",
+      version="1.4.2",
       author="Thomas Liu",
       author_email="tfliu@tfliu2.com",
       url="https://tfliu.com",

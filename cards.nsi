@@ -12,7 +12,7 @@
 
   ;Name and file
   Name "Cards to Cards"
-  OutFile "cards-1.4.1-win32-installer.exe"
+  OutFile "cards-1.4.2-win32-installer.exe"
 
   ;Default installation folder
   InstallDir "$PROGRAMFILES\Cards"
@@ -25,7 +25,7 @@
   
 ;======================================================
 ; Defines
-!define srcdir "./cards-1.4.1-win32"
+!define srcdir "./cards-1.4.2-win32"
 !define productname "Cards to Cards"
 !define regkey "Software\${productname}"
 !define exec "cards_gui_client.exe"

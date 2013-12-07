@@ -1,5 +1,14 @@
 Change Log
 ================================
+Cards v1.4.2 Notes
+--------------------------------
+- Fixed bug where cards with long text went off of the card
+- Card decks can now be set using the ini file
+
+Cards v1.4.1 Notes
+--------------------------------
+- Fixed client so Windows servers will work now.
+
 Cards v1.4.0 Notes
 --------------------------------
 - Full GUI client with all the features of the console client. Changes include ability to display score in HTML table, ability to obtain the round summary, ability to judge, and ability to discard a card after submitting it.

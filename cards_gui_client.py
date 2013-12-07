@@ -6,8 +6,10 @@ import pickle
 import socket
 import sys
 import cards_client
+from cards_client import card, Player
 from threading import Thread
 from PyQt4 import QtGui, QtCore
+import pdb
 
 class MainWindow(QtGui.QMainWindow):
     def __init__(self):
@@ -15,8 +17,9 @@ class MainWindow(QtGui.QMainWindow):
         self.initUI()
         self.even = True
         QtCore.QObject.connect(QtGui.qApp, QtCore.SIGNAL('invalidIP'), self.invalid)
-        QtCore.QObject.connect(QtGui.qApp, QtCore.SIGNAL('notify'), self.notify)
+        QtCore.QObject.connect(QtGui.qApp, QtCore.SIGNAL('notify(PyQt_PyObject)'), self.notify)
         QtCore.QObject.connect(QtGui.qApp, QtCore.SIGNAL('Started'), self.expand)
+        QtCore.QObject.connect(QtGui.qApp, QtCore.SIGNAL('Resize'), self.resizeEverything)
         QtCore.QObject.connect(QtGui.qApp, QtCore.SIGNAL('waiting(PyQt_PyObject)'), self.updateWaiting)
         
     def initUI(self):
@@ -31,6 +34,10 @@ class MainWindow(QtGui.QMainWindow):
         self.center()
         self.setWindowTitle('Cards')
         self.show()
+        
+    def resizeEverything(self):
+        self.resize(650,400)
+        self.adjustSize()
         
     def expand(self):
         self.resize(650,400)
@@ -65,7 +72,6 @@ class Cards(QtGui.QWidget):
         
     def initUI(self):
         self.grid = QtGui.QGridLayout()
-        vbox = QtGui.QVBoxLayout()
         
         #Widgets
         self.word = QtGui.QLabel("Enter IP Address:")
@@ -79,7 +85,8 @@ class Cards(QtGui.QWidget):
         
         
         #Connections
-        self.startButton = QtGui.QPushButton('Start')
+        self.startButton = QtGui.QPushButton('Connect')
+        self.startButton.setAutoDefault(True)
         self.startButton.setGeometry(100,100,100,100)
         self.startButton.clicked.connect(self.start)
         
@@ -103,38 +110,33 @@ class Cards(QtGui.QWidget):
         try:
             print(self.ipEdit.text())
             self.me = cards_client.ClientPlayer(self.ipEdit.text(), 12345, str(self.nameEdit.text()) if self.nameEdit.text() != '' else "FNG")
-            self.game = cards_client.Game(self.ipEdit.text, 12345)
+            self.game = cards_client.Game(self.ipEdit.text(), 12345, self.me)
            
             for widget in self.gridWidgets:
                 while not widget.isHidden():
                      t = GenericThread(widget.hide)
                      t.start()
-#                    widget.hide()
                 print("Hiding " + str(widget))
             QtGui.QApplication.processEvents()
             self.submitButton = QtGui.QPushButton('Submit')
             self.submitButton.setDisabled(True)
             self.submitButton.clicked.connect(self.submit)
             self.me.hand = [cards_client.card("entity","") for i in range(5)]
-#            self.guiHand = {}
             self.guiHand = []
-            self.descriptionLabel = QtGui.QLabel("")
+            self.guiPool = []
+            self.judged = False
+            self.updated = False
+            self.description = "Welcome to cards!"
+            self.descriptionLabel = QtGui.QLabel(self.description)
+#            self.descriptionLabel.setFixedWidth(210)
+            self.descriptionLabel.setWordWrap = True
+            
             self.grid.addWidget(self.descriptionLabel,0,2)
-#            self.cardImage = QtGui.QPixmap(('img/card.png')).scaled(210,300, QtCore.Qt.KeepAspectRatio)
-#            self.cardSelectedImage = QtGui.QPixmap(('img/cardSelected.png')).scaled(210,300, QtCore.Qt.KeepAspectRatio)
+            
+            self.grid.addWidget(self.submitButton,4,2)
+            
             for card in self.me.hand:
                 self.guiHand.append(QtGui.QPushButton(""))
-#                self.guiHand.append(CardLabel("f"))
-#                self.guiHand[CardLabel("f")] = i
-#                for label in self.guiHand.keys():
-#                    label.setPixmap(self.cardImage)
-##                    label.clicked.connect(lambda: self.changeImg(label))
-#                    QtCore.QObject.connect(label, QtCore.SIGNAL('clicked()'), self.changeImg)
-#                    self.grid.addWidget(label,1,self.guiHand[label])
-            self.grid.addWidget(self.submitButton,2,2)
-#                self.guiHand[QtGui.QPushButton("")] = i
-#                for card in self.guiHand.keys():
-#                card.setFixedSize(210,300)
             for i, card in enumerate(self.guiHand):
                 card.setFixedSize(210,300)
                 card.setCheckable = True
@@ -148,42 +150,110 @@ class Cards(QtGui.QWidget):
             raise
             
     def submit(self):
-        self.me.directSubmit(self.choice)
+        self.me.directSubmit(self.choice,self.me.isJudge)
+        self.submitButton.setDisabled(True)
+        self.judged = True
+#        self.descriptionLabel.setText("The description for the round was: {0}.".format(self.description.strip('\n')))
+        self.descriptionLabel.setFixedWidth(210)
         
-    def choose(self):
+    def choose(self, cardList=[]):
+        if not self.guiHand[0].isEnabled():
+            cardList = self.guiPool
+        else:
+            cardList = self.guiHand
+            
         sender = self.sender()        
-        self.choice = self.guiHand.index(sender)
-        for button in self.guiHand:
+        self.choice = cardList.index(sender)
+        for button in cardList:
             button.setChecked(False)
         sender.setDown(True)
-        print(self.guiHand.index(sender))
+        print(self.choice)
         
     def updateGuiHand(self):
+        while len(self.me.hand) > len(self.guiHand):
+            self.guiHand.append(QtGui.QPushButton(""))
+        for i, card in enumerate(self.guiHand):
+            card.setFixedSize(210,300)
+            card.setCheckable = True
+            card.clicked.connect(self.choose)
+            self.grid.addWidget(card,1,i)
+        for i,button in enumerate(self.guiHand):
+            button.setText(self.me.hand[i].text)
+            
+    def updateGuiPool(self):
+        for button in self.guiHand:
+            button.setDisabled(True)
+        while len(self.me.pool) > len(self.guiPool):
+            self.guiPool.append(QtGui.QPushButton(""))
+            print(self.guiPool)
+        for i, card in enumerate(self.guiPool):
+            card.setFixedSize(210,300)
+            card.setCheckable = True
+            card.clicked.connect(self.choose)
+            self.grid.addWidget(card,2,i)
+            card.show()
+        self.submitButton.setDisabled(False)
         
+#        time.sleep(30)
+            
+        for i,button in enumerate(self.guiPool):
+            button.setText(self.me.pool[i].text)
+            
+    def cleanGuiPool(self):
+        for button in self.guiPool:
+            button.hide()
+        for button in self.guiHand:
+            button.setDisabled(False)
+        self.adjustSize()
+        QtGui.qApp.emit(QtCore.SIGNAL("Resize"))
             
     def wait(self):
         QtGui.QApplication.processEvents()
-        myTurn, slowPlayer = self.me.myTurn()
-        if myTurn:
-            QtGui.qApp.emit(QtCore.SIGNAL("notify(PyQt_PyObject)"), "Your turn!")
-            self.submitButton.setDisabled(False)            
+        
+        if not self.updated:
+            myTurn, slowPlayer = self.me.myTurn()
+            if myTurn:
+                self.me.updateTurnInfo()
+                self.description = self.game.description
+                self.descriptionLabel.setText("The description for this round is: {0}.".format(self.description.strip('\n')))
+                QtGui.qApp.emit(QtCore.SIGNAL("notify(PyQt_PyObject)"), "Your turn!")
+                self.choice = 0
+                if self.me.isJudge:
+                    QtGui.qApp.emit(QtCore.SIGNAL("notify(PyQt_PyObject)"), "Your turn! You are judging.")
+    #                pdb.set_trace()
+                    self.me.updatePool()
+                    print(self.me.pool)
+                    self.updateGuiPool()
+                    self.updated = True
+                else:
+                    self.submitButton.setDisabled(False)
+                    self.me.updateHand()
+                    self.updateGuiHand()
+                    self.updated = True
+            else:
+                QtGui.qApp.emit(QtCore.SIGNAL("waiting(PyQt_PyObject)"), slowPlayer)
+        if self.judged:
+            self.cleanGuiPool()
+            self.timer.singleShot(1000,self.waitForRoundEnd)
         else:
-            QtGui.qApp.emit(QtCore.SIGNAL("waiting(PyQt_PyObject)"), slowPlayer)
-#            print("Signaled")
-        self.timer.singleShot(1000,self.wait)
+            self.timer.singleShot(1000,self.wait)
+        
+    def waitForRoundEnd(self):
+        self.judged = False
+        self.updated = False
+        QtGui.qApp.emit(QtCore.SIGNAL("waiting(PyQt_PyObject)"), "judgement")
+        if self.game.roundEnd:
+            winner, scores, pool = self.game.scores
+            text = ("{0} won this round!".format(winner)) + '\n'
+            for key in pool.keys():
+                text += "{0} submitted '{1}'".format(pool[key],key.strip('\n'))
+            print(text)
+            self.timer.singleShot(1000,self.wait)
+            helpBox = QtGui.QMessageBox()
+            helpBox.about(self, "Submissions", QtCore.QString(text))
             
-#    def waitR(self):
-#        while True:
-#            myTurn, slowPlayer = self.me.myTurn()
-#            if myTurn:
-#                QtGui.qApp.emit(QtCore.SIGNAL("myturn"))
-#            else:
-#                QtGui.qApp.emit(QtCore.SIGNAL("waiting(string)"), slowPlayer)
-#            time.sleep(1)
-            
-#    def wait(self):
-#        self.workThread = WorkThread(self.me)
-#        self.workThread.start()
+        else:
+            self.timer.singleShot(500,self.waitForRoundEnd)
             
     def changeImg(self, label):
         label.setPixmap(self.cardSelectedImage)
@@ -202,22 +272,6 @@ class GenericThread(QtCore.QThread):
     def run(self):
         self.function(*self.args,**self.kwargs)
         return
-
-class WorkThread(QtCore.QThread):
-    def __init__(self, me):
-        QtCore.QThread.__init__(self)
-        self.me = me
-
-    def run(self):
-        while True:
-            myTurn, slowPlayer = self.me.myTurn()
-            if myTurn:
-                QtGui.qApp.emit(QtCore.SIGNAL("myturn"))
-            else:
-                QtGui.qApp.emit(QtCore.SIGNAL("waiting(PyQt_PyObject)"), slowPlayer)
-            print("hi")
-            time.sleep(1)
-
             
 class CardLabel(QtGui.QLabel):
 #    def __init__(self, text, number):

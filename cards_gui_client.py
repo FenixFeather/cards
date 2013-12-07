@@ -71,6 +71,11 @@ class Cards(QtGui.QWidget):
         
         
     def initUI(self):
+        self.vbox = QtGui.QVBoxLayout()
+        self.hbox = QtGui.QHBoxLayout()
+        self.description = "Welcome to cards!"
+        self.descriptionLabel = QtGui.QLabel(self.description)
+        self.vbox.addWidget(self.descriptionLabel)
         self.grid = QtGui.QGridLayout()
         
         #Widgets
@@ -97,12 +102,21 @@ class Cards(QtGui.QWidget):
         self.grid.addWidget(self.nameEdit, 1, 1)
         self.grid.addWidget(self.startButton, 2, 1)
         
+        self.hbox.addLayout(self.grid)
+        self.scoresDisplay = QtGui.QTextEdit()
+        self.scoresDisplay.hide()
+        self.scoresDisplay.setReadOnly(True)
+        self.scoresDisplay.setHtml("<h3>Scores</h3>")
+        self.hbox.addWidget(self.scoresDisplay)
+        
+        self.vbox.addLayout(self.hbox)
+        
 #        vbox.addWidget(self.word)
 #        vbox.addWidget(self.ipEdit)
 #        vbox.addWidget(self.startButton)
         
-#        self.setLayout(vbox)
-        self.setLayout(self.grid)
+        self.setLayout(self.vbox)
+#        self.setLayout(self.grid)
         self.gridWidgets = [self.word,self.ipEdit,self.nameLabel,self.nameEdit,self.startButton]
         
     def start(self):
@@ -124,14 +138,14 @@ class Cards(QtGui.QWidget):
             self.me.hand = [cards_client.card("entity","") for i in range(5)]
             self.guiHand = []
             self.guiPool = []
+            self.scoresDisplay.show()
             self.judged = False
             self.updated = False
-            self.description = "Welcome to cards!"
-            self.descriptionLabel = QtGui.QLabel(self.description)
+            
 #            self.descriptionLabel.setFixedWidth(210)
             self.descriptionLabel.setWordWrap = True
             
-            self.grid.addWidget(self.descriptionLabel,0,2)
+#            self.grid.addWidget(self.descriptionLabel,0,2)
             
             self.grid.addWidget(self.submitButton,4,2)
             
@@ -154,7 +168,6 @@ class Cards(QtGui.QWidget):
         self.submitButton.setDisabled(True)
         self.judged = True
 #        self.descriptionLabel.setText("The description for the round was: {0}.".format(self.description.strip('\n')))
-        self.descriptionLabel.setFixedWidth(210)
         
     def choose(self, cardList=[]):
         if not self.guiHand[0].isEnabled():
@@ -249,12 +262,20 @@ class Cards(QtGui.QWidget):
                 text += "{0} submitted '{1}'".format(pool[key],key.strip('\n'))
             print(text)
             self.timer.singleShot(1000,self.wait)
+            self.updateScores(scores)
             helpBox = QtGui.QMessageBox()
             helpBox.about(self, "Submissions", QtCore.QString(text))
-            
         else:
             self.timer.singleShot(500,self.waitForRoundEnd)
             
+    def updateScores(self,scores):
+        text = "<h3>Scores</h3><table>"
+        for player in scores.keys():
+            text += '''<tr>
+            <td>{0}: </td>
+            <td>{1}</td>'''.format(player,scores[player])
+        text += "</table>"
+        self.scoresDisplay.setHtml(text)
     def changeImg(self, label):
         label.setPixmap(self.cardSelectedImage)
         print("Changed image")
@@ -286,51 +307,3 @@ if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
     ex = MainWindow()
     sys.exit(app.exec_())
-    
-#    serverIp = raw_input("Enter server IP address: ")
-#    port = int(raw_input("Enter server port: "))
-#    me = ClientPlayer(serverIp, port)
-#    game = Game(serverIp, port)
-##    time.sleep(30)
-#    while True:
-#        try:
-#            myTurn, slowPlayer = me.myTurn()
-#            update("Waiting for {0}...".format(slowPlayer))            
-#            if myTurn:
-#                print("Your turn!")            
-#                me.updateTurnInfo()
-#                if me.isJudge:
-#                    print("You are judging.")
-#                    print("The description for this round is {0}.".format(game.description.strip('\n')))
-#                    me.updatePool()
-#                    me.judge()
-#                else:
-#                    print("Submit a card.")
-#                    print("The description for this round is {0}.".format(game.description.strip('\n')))
-#                    me.updateHand()
-#                    me.submit()
-#                    
-#                while True:
-#                    update("Waiting for judgement...")
-#                    if game.roundEnd:
-#                        winner, scores, pool = game.scores
-#                        print("{0} won this round!".format(winner))
-#                        for key in pool.keys():
-#                            print("{0} submitted '{1}'".format(pool[key],key))
-#                        print("==Scores==")
-#                        for key in scores.keys():
-#                            print("{0}: {1}".format(key,scores[key]))
-#                        print("\n----------------\n----------------\n")
-#                        break
-#                    time.sleep(0.5)
-#                    update("Waiting for judgement.. ")    
-#                    time.sleep(0.5)
-#            time.sleep(0.5)
-#            update("Waiting for {0}.. ".format(slowPlayer))
-#            time.sleep(0.5)
-#        except KeyboardInterrupt:
-#            sys.exit(0)
-#        except socket.error:
-#            print("Connection lost.")
-#            time.sleep(5)
-#            continue

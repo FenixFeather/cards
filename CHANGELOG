@@ -1,5 +1,14 @@
 Change Log
 ================================
+Cards v1.4.0 Notes
+--------------------------------
+- Full GUI client with all the features of the console client. Changes include ability to display score in HTML table, ability to obtain the round summary, ability to judge, and ability to discard a card after submitting it.
+- Drop in Drop out mode enabled; players can freely disconnect and connect to the game. Note that, however, the server will shut down when there is only one player remaining in the game.
+- Port is now obtained from a settings.ini file.
+
+Cards v1.2.0 Notes
+--------------------------------
+- Rudimentary GUI client
 
 Cards v1.1.1 Notes
 --------------------------------

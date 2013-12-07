@@ -178,6 +178,8 @@ class ConfigReader():
             Config = ConfigParser.ConfigParser()
             Config.add_section('Settings')
             Config.set('Settings','Port',2809)
+            Config.set('Settings','Descriptors',"test-adjs.txt")
+            Config.set('Settings','Entities',"test-nouns.txt")
             with open("settings.ini",'w') as cfgfile:
                 Config.write(cfgfile)
                 cfgfile.close()

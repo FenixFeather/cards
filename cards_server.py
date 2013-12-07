@@ -68,7 +68,7 @@ class Player():
                 continue
         
 class deck():
-    def __init__(self):
+    def __init__(self,desc="test-adjs.txt",ent="test-nounds.txt"):
         self.descriptorCards = self.parseCards("test-adjs.txt","descriptor")  #The two decks of cards are parsed from text files
         self.entityCards = self.parseCards("test-nouns.txt","entity")
         
@@ -115,9 +115,10 @@ class game():
 #        self.players = [player(i) for i in range(numPlayers)] #Creates a list of numPlayers player objects, each initialized to a unique id
         self.players = []
         self.deck = Deck
+        config = ConfigReader()
         HOST = ''    #we are the host
 #        PORT = int(raw_input("Port: "))    #arbitrary port not currently in use
-        PORT = ConfigReader.getPort()
+        PORT = config.port
         ADDR = (HOST,PORT)    #we need a tuple for the address
         self.BUFSIZE = 4096    #reasonably sized buffer for data
 
@@ -296,28 +297,42 @@ class game():
             print("{0}: {1}".format(str(player), player.score))
             
 class ConfigReader():
-    @staticmethod
-    def getPort():
+    def __init__(self):
+        self.port = 2809
+        self.desc = "test-adjs.txt"
+        self.ent = "test-nouns.txt"
+        try:        
+            self.initSettings()
+        except:
+            print("Error accessing settings.ini")
+        
+    def initSettings(self):
         Config = ConfigParser.ConfigParser()
         try:
             with open("settings.ini",'r') as cfgfile:
                 Config.readfp(cfgfile)
                 Config.sections()
-                port = Config.getint('Settings', 'Port')
+                self.port = Config.getint('Settings', 'Port')
+                self.desc = Config.get('Settings', 'Descriptors')
+                self.ent = Config.get('Settings', 'Entities')
                 cfgfile.close()
-            return port
-        except:
+        except Exception as e:            
             print("Error getting settings, reverting to default.")
             Config = ConfigParser.ConfigParser()
             Config.add_section('Settings')
             Config.set('Settings','Port',2809)
+            Config.set('Settings','Descriptors',"test-adjs.txt")
+            Config.set('Settings','Entities',"test-nouns.txt")
             with open("settings.ini",'w') as cfgfile:
                 Config.write(cfgfile)
                 cfgfile.close()
-            return 2809
+            print(type(e))
+            print(e.args)
+            raise
                         
 if __name__ == "__main__":
-    Deck = deck()   #Begin by initializing a deck
+    config = ConfigReader()
+    Deck = deck(config.desc,config.ent)   #Begin by initializing a deck
     Deck.shuffleCards()  
     Game = game(Deck)   #Initialize the game with the current deck
     Game.drawCards()  #Have players draw all the cards

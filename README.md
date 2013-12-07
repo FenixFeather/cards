@@ -34,3 +34,4 @@ Note on Cards Against Humanity Deck
 - It is distributed under a Creative Commons BY-NC-SA 2.0 license. The license is viewable here.
 - Their website is available at http://cardsagainsthumanity.com
 - The black deck is the descriptors, and the white deck is the entities.
+- This app isn't endorsed by or affiliated with Cards Against Humanity LLC.

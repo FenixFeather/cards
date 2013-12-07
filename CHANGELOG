@@ -1,5 +1,13 @@
 Change Log
 ================================
+Cards v1.4.3 Notes
+--------------------------------
+- Fixed bug that didn't let you pick custom decks.
+- Fixed bug with disconnections in some cases causing the GUI client to freeze up.
+- Added Cards Against Humanity decks to use.
+- Fixed exception being raised when GUI client closes early.
+- Server shuts down properly now.
+
 Cards v1.4.2 Notes
 --------------------------------
 - Fixed bug where cards with long text went off of the card

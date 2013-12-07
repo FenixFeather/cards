@@ -6,6 +6,7 @@ import socket
 import pickle
 import time
 import ConfigParser
+import sys
 
 class SocketManager:
 
@@ -55,7 +56,11 @@ class Player():
     def judge(self,choice):  #placeholder method that returns the ID of the owner of the winning card
         print("{0} is now judging. Choose the card that best matches the description: {1}".format(str(self),str(self.dCard)))
         self.displayCards(self.pool)
-        return self.pool[choice].owner
+        try:
+            return self.pool[choice].owner
+        except IndexError:
+            print("Only one or players left in the game, server shutting down.")
+            sys.exit(0)
         
     def chooseCard(self,cards):  #Once again, this method is a placeholder. Future versions will involve picking thru a GUI.
         while True:
@@ -253,9 +258,6 @@ class game():
         for player in self.players:
             if player != self.judge:
                 self.handleRequests(player)
-                
-        for player in self.playersToRemove:
-            self.players.remove(player)
             
         #Judging time
         random.shuffle(self.judge.pool)
@@ -270,7 +272,10 @@ class game():
         self.roundEnd = True
         while int(time.time()) - start != 3:
             self.handleRequests(Player(1,"stragglers"))
-            
+        for player in self.playersToRemove:
+        
+            self.players.remove(player)
+                
         self.players += self.playersToAdd
         self.drawCards()
         

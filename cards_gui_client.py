@@ -63,8 +63,12 @@ class MainWindow(QtGui.QMainWindow):
         self.even = not self.even
         
     def closeEvent(self, event):
-        self.spreading.me.disconnect()
-        event.accept()
+        try:
+            self.spreading.me.disconnect()
+        except AttributeError:
+            pass
+        finally:
+            event.accept()
         
         
 class Cards(QtGui.QWidget):
@@ -224,6 +228,9 @@ class Cards(QtGui.QWidget):
         while len(self.me.pool) > len(self.guiPool):
             self.guiPool.append(QtGui.QPushButton(""))
             print(self.guiPool)
+        while len(self.me.pool) < len(self.guiPool):
+            self.guiPool.pop()
+            print(self.guiPool)
         for i, card in enumerate(self.guiPool):
             card.setFixedSize(210,300)
             card.setCheckable = True
@@ -233,7 +240,10 @@ class Cards(QtGui.QWidget):
         self.submitButton.setDisabled(False)
             
         for i,button in enumerate(self.guiPool):
-            button.setText(self.wrap(self.me.pool[i].text))
+            try:
+                button.setText(self.wrap(self.me.pool[i].text))
+            except IndexError:
+                pass
             
     def cleanGuiPool(self):
         for button in self.guiPool:

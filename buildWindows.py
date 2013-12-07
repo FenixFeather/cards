@@ -29,7 +29,7 @@ def find_data_files(source,target,patterns):
     return sorted(ret.items())
 
 setup(name="Spreader",
-      version="1.4.2",
+      version="1.4.3",
       author="Thomas Liu",
       author_email="tfliu@tfliu2.com",
       url="https://tfliu.com",
@@ -38,6 +38,6 @@ setup(name="Spreader",
       console=["cards_server.py","cards_client.py"],
       windows=[{"script": "cards_gui_client.py", "icon_resources": [(1, "spreader.ico")]}],
       data_files=find_data_files('.','',[
-        'img/*','LICENSE.','README.md','settings.ini', 'CHANGELOG', 'test-adjs.txt','test-nouns.txt' 
+        'img/*','LICENSE.','README.md','settings.ini', 'CHANGELOG', 'cardsAgainstHumanity-black.txt', 'cardsAgainstHumanity-white.txt','test-adjs.txt','test-nouns.txt' 
       ]),
       options={"py2exe": {"includes": ["sip"]}})

@@ -5,6 +5,7 @@ import time
 import pickle
 import socket
 import sys
+import ConfigParser
 
 class ClientPlayer():
     def __init__(self,ip,port,name):
@@ -159,11 +160,33 @@ def update(s):
     sys.stdout.write("\r                             ")
     sys.stdout.flush() 
     sys.stdout.write("\r" + (s))
-    sys.stdout.flush()        
-        
+    sys.stdout.flush()
+
+class ConfigReader():
+    @staticmethod
+    def getPort():
+        Config = ConfigParser.ConfigParser()
+        try:
+            with open("settings.ini",'r') as cfgfile:
+                Config.readfp(cfgfile)
+                Config.sections()
+                port = Config.getint('Settings', 'Port')
+                cfgfile.close()
+            return port
+        except:
+            print("Error getting settings, reverting to default.")
+            Config = ConfigParser.ConfigParser()
+            Config.add_section('Settings')
+            Config.set('Settings','Port',2809)
+            with open("settings.ini",'w') as cfgfile:
+                Config.write(cfgfile)
+                cfgfile.close()
+            return 2809           
+            
 if __name__ == "__main__":
     serverIp = raw_input("Enter server IP address: ")
-    port = int(raw_input("Enter server port: "))
+#    port = int(raw_input("Enter server port: "))
+    port = ConfigReader.getPort()
     me = ClientPlayer(serverIp, port, raw_input("Enter name: "))
     game = Game(serverIp, port, me)
 #    time.sleep(30)

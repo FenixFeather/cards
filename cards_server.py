@@ -5,6 +5,7 @@ import random
 import socket
 import pickle
 import time
+import ConfigParser
 
 class SocketManager:
 
@@ -115,7 +116,8 @@ class game():
         self.players = []
         self.deck = Deck
         HOST = ''    #we are the host
-        PORT = int(raw_input("Port: "))    #arbitrary port not currently in use
+#        PORT = int(raw_input("Port: "))    #arbitrary port not currently in use
+        PORT = ConfigReader.getPort()
         ADDR = (HOST,PORT)    #we need a tuple for the address
         self.BUFSIZE = 4096    #reasonably sized buffer for data
 
@@ -130,7 +132,8 @@ class game():
         print [player.name for player in self.players]
         self.judge = random.choice(self.players)
         self.winnerName = "Nobody"
-        self.playerToRemove = None
+        self.playersToRemove = []
+        self.playersToAdd = []
         
     def initPlayers(self,numPlayers):
         while len(self.players) != numPlayers:
@@ -159,6 +162,9 @@ class game():
             conn,addr = self.serv.accept()
             data = pickle.loads(conn.recv(self.BUFSIZE))
             print(data)
+            if not any([data[0] == hash(person) for person in self.players]) and not any([data[0] == hash(person) for person in self.playersToAdd]):
+                self.playersToAdd.append(Player(*data))
+                print("Added {0}".format(data[0]))
             if str(data[1]) == 'myturn':
                 conn.send(pickle.dumps((hash(player) == data[0],player.name)))
                 conn.close()
@@ -188,22 +194,27 @@ class game():
                 conn.close()
                 return
             elif data[1] == 'disconnect':
-                shouldReturn = False
-                for person in self.players:
-                    shouldReturn = (person == player)
-                    if data[0] == hash(person):
-                        if person == self.judge:
-                            self.judge = Player(-1,"Ghost")
-                            self.judge.pool = person.pool
-                            self.judge.dCard = person.dCard
-                        print("{0} has disconnected!".format(person))
-                        if self.players.index(person) > self.players.index(player):
-                            self.players.remove(person)
-                        else:
-                            self.playerToRemove = person
-                conn.close()
-                if shouldReturn:
-                    return
+                if not any([data[0] == hash(candidate) for candidate in self.playersToAdd]):
+                    shouldReturn = False
+                    for person in self.players:
+                        shouldReturn = (person == player)
+                        if data[0] == hash(person):
+                            if person == self.judge:
+                                self.judge = Player(-1,"Ghost")
+                                self.judge.pool = person.pool
+                                self.judge.dCard = person.dCard
+                            print("{0} has disconnected!".format(person))
+                            if self.players.index(person) > self.players.index(player):
+                                self.players.remove(person)
+                            else:
+                                self.playersToRemove.append(person)
+                    conn.close()
+                    if shouldReturn:
+                        return
+                else:
+                    for candidate in self.playersToAdd:
+                        if data[0] == hash(candidate):
+                            self.playersToAdd.remove(candidate)
                 
             elif str(data[1]) == 'winner':
                 winnerHash = self.judge.judge(data[2])
@@ -228,7 +239,9 @@ class game():
         self.judge.dCard = None
         self.roundEnd = False
         self.winnerName = "Nobody"
-        self.playerToRemove = None
+        self.playersToRemove = []
+        self.playersToAdd = []
+        print [player.name for player in self.players]
         try:
             self.judge = self.players[(self.players.index(self.judge) + 1)%len(self.players)]  #rotate judge position
         except ValueError:
@@ -240,8 +253,9 @@ class game():
             if player != self.judge:
                 self.handleRequests(player)
                 
-        if self.playerToRemove:
-            self.players.remove(self.playerToRemove)
+        for player in self.playersToRemove:
+            self.players.remove(player)
+            
         #Judging time
         random.shuffle(self.judge.pool)
         if self.judge.number != -1:
@@ -255,7 +269,10 @@ class game():
         self.roundEnd = True
         while int(time.time()) - start != 3:
             self.handleRequests(Player(1,"stragglers"))
-                
+            
+        self.players += self.playersToAdd
+        self.drawCards()
+        
     def constructScoresDict(self):
         result = {}
         for player in self.players:
@@ -278,6 +295,27 @@ class game():
         for player in self.players:
             print("{0}: {1}".format(str(player), player.score))
             
+class ConfigReader():
+    @staticmethod
+    def getPort():
+        Config = ConfigParser.ConfigParser()
+        try:
+            with open("settings.ini",'r') as cfgfile:
+                Config.readfp(cfgfile)
+                Config.sections()
+                port = Config.getint('Settings', 'Port')
+                cfgfile.close()
+            return port
+        except:
+            print("Error getting settings, reverting to default.")
+            Config = ConfigParser.ConfigParser()
+            Config.add_section('Settings')
+            Config.set('Settings','Port',2809)
+            with open("settings.ini",'w') as cfgfile:
+                Config.write(cfgfile)
+                cfgfile.close()
+            return 2809
+                        
 if __name__ == "__main__":
     Deck = deck()   #Begin by initializing a deck
     Deck.shuffleCards()  

@@ -10,6 +10,7 @@ from cards_client import card, Player
 from threading import Thread
 from PyQt4 import QtGui, QtCore
 import pdb
+import ConfigParser
 
 class MainWindow(QtGui.QMainWindow):
     def __init__(self):
@@ -128,8 +129,9 @@ class Cards(QtGui.QWidget):
         print("start")
         try:
             print(self.ipEdit.text())
-            self.me = cards_client.ClientPlayer(self.ipEdit.text(), 12345, str(self.nameEdit.text()) if self.nameEdit.text() != '' else "FNG")
-            self.game = cards_client.Game(self.ipEdit.text(), 12345, self.me)
+            port = cards_client.ConfigReader.getPort()
+            self.me = cards_client.ClientPlayer(self.ipEdit.text(), port, str(self.nameEdit.text()) if self.nameEdit.text() != '' else "FNG")
+            self.game = cards_client.Game(self.ipEdit.text(), port, self.me)
            
             for widget in self.gridWidgets:
                 while not widget.isHidden():
@@ -171,8 +173,13 @@ class Cards(QtGui.QWidget):
     def submit(self):
         self.me.directSubmit(self.choice,self.me.isJudge)
         self.submitButton.setDisabled(True)
+        self.discard()
         self.judged = True
-#        self.descriptionLabel.setText("The description for the round was: {0}.".format(self.description.strip('\n')))
+        
+    def discard(self):
+        cardList = self.guiPool if not self.guiHand[0].isEnabled() else self.guiHand
+        cardList[self.choice].setText("")
+            
         
     def choose(self, cardList=[]):
         if not self.guiHand[0].isEnabled():
@@ -180,7 +187,7 @@ class Cards(QtGui.QWidget):
         else:
             cardList = self.guiHand
             
-        sender = self.sender()        
+        sender = self.sender()
         self.choice = cardList.index(sender)
         for button in cardList:
             button.setChecked(False)
@@ -211,8 +218,6 @@ class Cards(QtGui.QWidget):
             self.grid.addWidget(card,2,i)
             card.show()
         self.submitButton.setDisabled(False)
-        
-#        time.sleep(30)
             
         for i,button in enumerate(self.guiPool):
             button.setText(self.me.pool[i].text)

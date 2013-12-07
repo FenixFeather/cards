@@ -123,9 +123,9 @@ Section "Uninstall"
   
   !insertmacro MUI_STARTMENU_GETFOLDER Application $StartMenuFolder
     
-  Delete "$SMPROGRAMS\$StartMenuFolder\Cards to Cards GUI Client.lnk" "$INSTDIR\${exec}"
-  Delete "$SMPROGRAMS\$StartMenuFolder\Cards to Cards Server.lnk" "$INSTDIR\cards_server.exe"
-  Delete "$SMPROGRAMS\$StartMenuFolder\Cards to Cards Console Client.lnk" "$INSTDIR\cards_client.exe"
+  Delete "$SMPROGRAMS\$StartMenuFolder\Cards to Cards GUI Client.lnk"
+  Delete "$SMPROGRAMS\$StartMenuFolder\Cards to Cards Server.lnk"
+  Delete "$SMPROGRAMS\$StartMenuFolder\Cards to Cards Console Client.lnk"
   Delete "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk"
   RMDir "$SMPROGRAMS\$StartMenuFolder"
 

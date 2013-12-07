@@ -50,8 +50,11 @@ class ClientPlayer():
         choice = self.chooseCard(self.hand)  #pick a card from your hand
         self.server.send_info((self.number,'submission',choice))
         
-    def directSubmit(self, choice):
-        self.server.send_info((self.number,'submission',choice))
+    def directSubmit(self, choice, winner=False):
+        if not winner:
+            self.server.send_info((self.number,'submission',choice))
+        else:
+            self.server.send_info((self.number,'winner',choice))
         
     def updateTurnInfo(self):
         self.otherPlayers, self.isJudge = self.server.request_info((self.number,'turninfo'))
@@ -125,20 +128,21 @@ class Requester():
 #        data = cli.recv(self.BUFSIZE)
         
 class Game():
-    def __init__(self, ip, port):
+    def __init__(self, ip, port, me):
 #        self.description = ""
 #        self.roundEnd = False
         self.server = Requester(ip, port)
+        self.me = me
         
     @property
     def description(self):
-        return self.server.request_info((me.number,'description'))
+        return self.server.request_info((self.me.number,'description'))
         
     @property
     def roundEnd(self):
 #        print("Checking for round end")
         try:
-            result = self.server.request_info((me.number,'roundEnd'))
+            result = self.server.request_info((self.me.number,'roundEnd'))
 #            print(result)
             return result
         except socket.error:
@@ -146,7 +150,7 @@ class Game():
         
     @property
     def scores(self):
-        return self.server.request_info((me.number,'scores'))
+        return self.server.request_info((self.me.number,'scores'))
         
 def update(s):
     sys.stdout.write("\r                             ")
@@ -158,7 +162,7 @@ if __name__ == "__main__":
     serverIp = raw_input("Enter server IP address: ")
     port = int(raw_input("Enter server port: "))
     me = ClientPlayer(serverIp, port, raw_input("Enter name: "))
-    game = Game(serverIp, port)
+    game = Game(serverIp, port, me)
 #    time.sleep(30)
     while True:
         try:

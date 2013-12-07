@@ -12,7 +12,7 @@ class ClientPlayer():
         self.hand = []  #Hand will hold card objects.
         self.score = 0
         self.pool = []  #When the player is the judge, other players submit to the player's pool
-        self.number = int(time.time()*1000)
+        self.number = int(time.time()*1000) % 1000000
         self.dCard = None  #When the player is judge, the player will have the descriptor card for the round
         self.name = name
         self.server = Requester(ip,port)

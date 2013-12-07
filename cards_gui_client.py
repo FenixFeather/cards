@@ -203,7 +203,20 @@ class Cards(QtGui.QWidget):
             card.clicked.connect(self.choose)
             self.grid.addWidget(card,1,i)
         for i,button in enumerate(self.guiHand):
-            button.setText(self.me.hand[i].text)
+            button.setText(self.wrap(self.me.hand[i].text))
+            
+    def wrap(self,text):
+        result = ""
+        i = len(text)/32
+        if i != 0:
+#        if len(text) > 32:
+#            result = text[0:32]+'\n'+text[32:-1]
+            for j in range(i):
+                result += text[j * 32:(j+1)*32] + '\n'
+            result += text[i*32:-1]
+        else:
+            result = text
+        return result
             
     def updateGuiPool(self):
         for button in self.guiHand:
@@ -220,7 +233,7 @@ class Cards(QtGui.QWidget):
         self.submitButton.setDisabled(False)
             
         for i,button in enumerate(self.guiPool):
-            button.setText(self.me.pool[i].text)
+            button.setText(self.wrap(self.me.pool[i].text))
             
     def cleanGuiPool(self):
         for button in self.guiPool:

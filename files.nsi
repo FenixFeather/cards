@@ -4,6 +4,8 @@ File /a "${srcdir}\*.zip"
 File /a "${srcdir}\*.txt"
 File /a "${srcdir}\*.ini"
 File /a "${srcdir}\*.md"
+File /a "${srcdir}\cards_server.exe"
+File /a "${srcdir}\cards_client.exe"
 File /a "${srcdir}\CHANGELOG"
 File /a "${srcdir}\LICENSE"
 AccessControl::GrantOnFile \

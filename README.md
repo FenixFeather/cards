@@ -33,3 +33,4 @@ Note on Cards Against Humanity Deck
 - The Cards Against Humanity decks are the intellectual property of Cards Against Humanity LLC.
 - It is distributed under a Creative Commons BY-NC-SA 2.0 license. The license is viewable here.
 - Their website is available at http://cardsagainsthumanity.com
+- The black deck is the descriptors, and the white deck is the entities.

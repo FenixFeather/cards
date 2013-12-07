@@ -69,8 +69,8 @@ class Player():
         
 class deck():
     def __init__(self,desc="test-adjs.txt",ent="test-nounds.txt"):
-        self.descriptorCards = self.parseCards("test-adjs.txt","descriptor")  #The two decks of cards are parsed from text files
-        self.entityCards = self.parseCards("test-nouns.txt","entity")
+        self.descriptorCards = self.parseCards(desc,"descriptor")  #The two decks of cards are parsed from text files
+        self.entityCards = self.parseCards(ent,"entity")
         
     def parseCards(self, path, cardType): #Parser assumes each line is its own card and returns a list of card objects
         f = open(path)

@@ -67,6 +67,9 @@ class ClientPlayer():
         
     def register(self):
         self.server.send_info((self.number,self.name))
+        
+    def disconnect(self):
+        self.server.send_info((self.number,'disconnect'))
     
     def displayCards(self,cards):
         for i, card in enumerate(cards):
@@ -201,6 +204,7 @@ if __name__ == "__main__":
             update("Waiting for {0}.. ".format(slowPlayer if slowPlayer else "others"))
             time.sleep(0.5)
         except KeyboardInterrupt:
+            me.disconnect()
             sys.exit(0)
         except socket.error:
             print("Connection lost.")

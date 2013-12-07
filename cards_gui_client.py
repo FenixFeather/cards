@@ -61,6 +61,11 @@ class MainWindow(QtGui.QMainWindow):
         self.statusBar().showMessage("Waiting for {0}{1}".format("others" if not name else name, "..." if self.even else ".."))
         self.even = not self.even
         
+    def closeEvent(self, event):
+        self.spreading.me.disconnect()
+        event.accept()
+        
+        
 class Cards(QtGui.QWidget):
     
     def __init__(self):
@@ -259,7 +264,7 @@ class Cards(QtGui.QWidget):
             winner, scores, pool = self.game.scores
             text = ("{0} won this round!".format(winner)) + '\n'
             for key in pool.keys():
-                text += "{0} submitted '{1}'".format(pool[key],key.strip('\n'))
+                text += "{0} submitted '{1}'".format(pool[key],key.strip('\n')) + '\n'
             print(text)
             self.timer.singleShot(1000,self.wait)
             self.updateScores(scores)

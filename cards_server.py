@@ -128,7 +128,9 @@ class game():
         self.serv.bind((ADDR))    #the double parens are to create a tuple with one element
         self.initPlayers(self.numPlayers)
         print [player.name for player in self.players]
-        self.judge = random.choice(self.players) 
+        self.judge = random.choice(self.players)
+        self.winnerName = "Nobody"
+        self.playerToRemove = None
         
     def initPlayers(self,numPlayers):
         while len(self.players) != numPlayers:
@@ -185,32 +187,68 @@ class game():
                 conn.send(pickle.dumps((self.winnerName,self.constructScoresDict(),self.constructPoolDict())))
                 conn.close()
                 return
+            elif data[1] == 'disconnect':
+                shouldReturn = False
+                for person in self.players:
+                    shouldReturn = (person == player)
+                    if data[0] == hash(person):
+                        if person == self.judge:
+                            self.judge = Player(-1,"Ghost")
+                            self.judge.pool = person.pool
+                            self.judge.dCard = person.dCard
+                        print("{0} has disconnected!".format(person))
+                        if self.players.index(person) > self.players.index(player):
+                            self.players.remove(person)
+                        else:
+                            self.playerToRemove = person
+                conn.close()
+                if shouldReturn:
+                    return
+                
             elif str(data[1]) == 'winner':
                 winnerHash = self.judge.judge(data[2])
                 conn.close()
-                for player in self.players:
-                    if winnerHash == hash(player):
-                        player.score += 1
-                        self.winnerName = player.name
-                        print("{0} won this round!".format(str(player)))
+                self.winnerName = "Nobody"
+                self.findWinner(winnerHash)
                 return
+                
             if self.roundEnd:
                 break
-                   
+                
+    def findWinner(self, winnerHash):
+        for player in self.players:
+            if winnerHash == hash(player):
+                player.score += 1
+                self.winnerName = player.name
+                print("{0} won this round!".format(self.winnerName))
+                return
+               
     def newRound(self):
         self.judge.pool = []  #reset judge's pool to empty
         self.judge.dCard = None
         self.roundEnd = False
-        self.judge = self.players[(self.players.index(self.judge) + 1)%len(self.players)]  #rotate judge position
+        self.winnerName = "Nobody"
+        self.playerToRemove = None
+        try:
+            self.judge = self.players[(self.players.index(self.judge) + 1)%len(self.players)]  #rotate judge position
+        except ValueError:
+            self.judge = random.choice(self.players)
         print(str(self.judge) + " is now the judge!")
         self.deck.dealDCard(self.judge)
         print("The description for this round is: {0}\n".format(self.judge.dCard))
         for player in self.players:
             if player != self.judge:
                 self.handleRequests(player)
+                
+        if self.playerToRemove:
+            self.players.remove(self.playerToRemove)
         #Judging time
         random.shuffle(self.judge.pool)
-        self.handleRequests(self.judge)
+        if self.judge.number != -1:
+            self.handleRequests(self.judge)
+        else:
+            winnerHash = self.judge.judge(0)
+            self.findWinner(winnerHash)
         
         #Clean up the round and send everyone useful info!
         start = int(time.time())
@@ -228,7 +266,10 @@ class game():
         result = {}
         playerIdDict = {player.number:player.name for player in self.players}
         for card in self.judge.pool:
-            result[card.text] = playerIdDict[card.owner]
+            try:
+                result[card.text] = playerIdDict[card.owner]
+            except KeyError:
+                pass
 #        print(result)
         return result
             

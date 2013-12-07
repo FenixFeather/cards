@@ -27,3 +27,9 @@ Notes on Drop-in-Drop-out
 - If a player leaves the game, and their card is chosen as the winner, nobody will win.
 - If a player leaves a game before their turn to submit a card, the game proceeds normally.
 - If a player who will be judging leaves the game, then the server will randomly choose a winner.
+
+Note on Cards Against Humanity Deck
+-----------
+- The Cards Against Humanity decks are the intellectual property of Cards Against Humanity LLC.
+- It is distributed under a Creative Commons BY-NC-SA 2.0 license. The license is viewable here.
+- Their website is available at http://cardsagainsthumanity.com
